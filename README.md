@@ -23,8 +23,8 @@ epochs per new observation = 1
 optimizer = adam
 loss = mse
 ```
-that predicts 1 timestep into the future on experimentally generated, sinusoidal time series data configured with 1
-sinusoid, a standard deviation of 1, and a resample down to 330 Hz.
+that predicts 1 timestep into the future on 5 seconds of experimentally generated, sinusoidal time series data
+consisting of 1 sinusoid, a standard deviation of 1, and a resample down to 330 Hz.
 
 ## Usage
 
