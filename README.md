@@ -38,7 +38,7 @@ model, this will correspond to either the `input_dim` of the MLP, or the `input_
 * `-u`/`--units`: a series of integers specifying the number of neurons in each `Dense` hidden layer of the MLP.
 Specifying `-u 30 20 10` would sequentially create three `Dense` hidden layers of sizes 30, 20, and 10. For now, each
 hidden layer is hardcoded to use `relu` as its activation function. As the LSTM implemented in this project is a simple
-LSTM without any stacking, this argument should not be specified if `lstm` is selected for `--model`. Default: `10`
+LSTM without any stacking, this argument should not be specified if `lstm` is selected for `model`. Default: `10`
 * `-e`/`--epochs`: number of epochs to train the model at each timestep. Default: `1`
 * `-f`/`--forecast-length`: number of timesteps into the future to predict at. Default: `1`.
 * `-r`/`--resample-factor`: fraction of the original sample rate of the training dataset to resample to. Default: `.2`
