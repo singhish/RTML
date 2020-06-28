@@ -24,7 +24,7 @@ optimizer = adam
 loss = mse
 ```
 that predicts 1 timestep into the future on experimentally generated, sinusoidal time series data configured with 1
-sinusoid and a standard deviation of 1 and resampled to 330 Hz.
+sinusoid, a standard deviation of 1, and a resample down to 330 Hz.
 
 ## Usage
 
