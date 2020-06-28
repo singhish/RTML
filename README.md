@@ -1,7 +1,7 @@
 # RTML
 
 Keras-based wrapper classes for DNNs geared toward making real-time prediction on non-linear time series data.
-Eventually intended to be deployed onto FPGA architectures.
+Eventually intended to be deployed onto FPGA architectures for real-time state estimation applications.
 
 ## Getting Started
 
