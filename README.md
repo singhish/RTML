@@ -65,7 +65,7 @@ until the model has fully traversed the training data.
 ```
 {start of window}_{end of window}
 ```
-where `start of window` and `end of window` denote fractions of the way through the amount training data specified.
+where `start of window` and `end of window` denote fractions of the way through the training data.
 * The `units` column is omitted if the LSTM model is used.
 
 ### Jupyter Notebook
