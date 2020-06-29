@@ -41,15 +41,15 @@ Specifying `-u 30 20 10` would sequentially create three `Dense` hidden layers o
 hidden layer is hardcoded to use `relu` as its activation function. As the LSTM implemented in this project is a simple
 LSTM without any stacking, this argument should not be specified if `lstm` is selected for `model`. Default: `10`
 * `-e`/`--epochs`: number of epochs to train the model at each timestep. Default: `1`
-* `-f`/`--forecast-length`: number of timesteps into the future to predict at. Default: `1`.
-* `-r`/`--resample-factor`: fraction of the original sample rate of the training dataset to resample to. Default: `.2`
+* `-f`/`--forecast-length`: number of timesteps into the future to predict at. Default: `1`
 * `d`/`--delay`: number of timesteps between predictions. A `delay` of `2` means the model lets 2 timesteps pass before
 making a prediction. Default: `0`
 * `--s`: selects the time series from the `data/` folder composed of `s` sinusoids. Valid values are `1`, `2`, and `3`.
 Default: `1`
 * `--std`: selects the time series from the `data/` folder with `std` standard deviations. Valid values are `1`, `5`,
 and `10`. Default: `1`
-* `--windows`: number of equal segments over which the model's `Local RMSE` is computed. Default: `50`
+* `-r`/`--resample-factor`: fraction of the original sample rate of the training dataset to resample to. Default: `.2`
+* `--rmses-to-log`: number of times RMSE measurements are logged. Default: `50`
 * `--save`: if specified, saves the model's predictions to a `csv` file.
 
 ### Output

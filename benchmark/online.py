@@ -12,20 +12,20 @@ FILE = os.path.dirname(__file__)
 parser = argparse.ArgumentParser(description='Online Model Benchmark')
 
 # Select model (mlp or lstm)
-parser.add_argument('-m', '--model', type=str, default='mlp')
+parser.add_argument('-m', '--model', type=str, default='lstm')
 
 # Select training configuration
 parser.add_argument('-l', '--history-length', type=int, default=10)
 parser.add_argument('-u', '--units', type=int, default=[10], nargs='*')
 parser.add_argument('-e', '--epochs', type=int, default=1)
 parser.add_argument('-f', '--forecast-length', type=int, default=1)
-parser.add_argument('-r', '--resample-factor', type=float, default=.2)
 parser.add_argument('-d', '--delay', type=int, default=0)
 
 # Select data configuration
 parser.add_argument('--s', type=int, default=1)
 parser.add_argument('--std', type=int, default=1)
-parser.add_argument('--windows', type=int, default=50)
+parser.add_argument('-r', '--resample-factor', type=float, default=.2)
+parser.add_argument('--rmses-to-log', type=int, default=50)
 
 # Other options
 parser.add_argument('--save', action='store_true')
@@ -33,9 +33,9 @@ parser.add_argument('--save', action='store_true')
 args = parser.parse_args()
 
 ## Load and resample dataset
-dataset = open(os.path.join(FILE, f'../data/{args.s}S_{args.std}STD.csv'), 'r')
-series, sample_rate = resample_time_series(
-    pd.read_csv(dataset)[['Time', 'Observation']],
+series = open(os.path.join(FILE, f'../data/{args.s}S_{args.std}STD.csv'), 'r')
+resampled, sample_rate = resample_time_series(
+    pd.read_csv(series)[['Time', 'Observation']],
     args.resample_factor
 )
 
@@ -48,8 +48,8 @@ if args.model == 'mlp':
         args.epochs,
         args.forecast_length,
         args.delay,
-        args.windows,
-        series.shape[0]
+        resampled.shape[0],
+        local_rmse_precision=args.rmses_to_log
     )
 elif args.model == 'lstm':
     model = OnlineLSTM(
@@ -57,22 +57,21 @@ elif args.model == 'lstm':
         args.epochs,
         args.forecast_length,
         args.delay,
-        args.windows,
-        series.shape[0]
+        resampled.shape[0],
+        local_rmse_precision=args.rmses_to_log
     )
 else:
     raise ValueError(f'Model not found: {args.model}. Must be `mlp` or `lstm`.')
 
 ## Execute training
 ## Log the RMSE at end of each of the number of windows specified for the specified training configuration
-print(f'> Benchmarking online {str.upper(args.model)} with input_size={args.history_length}, '
+print(f'> Benchmarking online {str.upper(args.model)} with history_length={args.history_length}, '
       f'{f"units={args.units}, " if args.model == "mlp" else ""}'
       f'epochs={args.epochs}, and forecast_length={args.forecast_length}\n'
-      f'> at {args.windows} loss calculation windows\n'
       f'> using the dataset {args.s}S_{args.std}STD.csv resampled to {sample_rate} Hz.',
       file=sys.stderr)
 
-for _, _, obs in series.itertuples():
+for _, _, obs in resampled.itertuples():
     window, local_rmse, cumul_rmse = model.advance_iteration(obs)
     if local_rmse:
         if isinstance(model, OnlineMLP):

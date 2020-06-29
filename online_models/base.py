@@ -13,9 +13,9 @@ class OnlineBase(ABC):
                  history_length: int,
                  forecast_length: int,
                  delay: int,
-                 windows: int,
                  timesteps: int,
-                 verbose: bool = False):
+                 local_rmse_precision: int,
+                 verbose: bool):
         """
         Constructor.
 
@@ -23,7 +23,8 @@ class OnlineBase(ABC):
         :param epochs: number of epochs to train model for at each timestep
         :param forecast_length: number of timesteps into the future for model to predict at
         :param delay: number of timesteps between predictions
-        :param windows: number of intervals to divide dataset into while training to compute Local RMSE
+        :param local_rmse_precision: parameter used to calculate the number of previous timesteps used in calculating
+            Local RMSE
         :param timesteps: total number of timesteps to train model for
         :param verbose: if true, will log current training timestep
         """
@@ -36,13 +37,12 @@ class OnlineBase(ABC):
         self._history_length = history_length
         self._forecast_length = forecast_length
         self._delay = delay
-        self._windows = windows
         self._timesteps = timesteps
+        self._rmse_precision = local_rmse_precision
         self._verbose = verbose
 
         # Initialize Pandas DataFrames for loss tracking
         self._timestep_label = 'Timestep'
-        self._window_label = 'Window'
         self._obs_label = 'Observed'
         self._pred_label = 'Predicted'
         self._cumul_rmse_label = 'Cumulative RMSE'
@@ -51,12 +51,12 @@ class OnlineBase(ABC):
         self._obs_df = pd.DataFrame(columns=[self._timestep_label, self._obs_label])
         self._pred_df = pd.DataFrame(columns=[self._timestep_label, self._pred_label])
         self._loss_df = pd.DataFrame(
-            columns=[self._timestep_label, self._window_label, self._cumul_rmse_label, self._local_rmse_label])
+            columns=[self._timestep_label, self._cumul_rmse_label, self._local_rmse_label])
 
         # Initialize state
         self._buffer = []
         self._timestep = 0
-        self._window = 0
+        self._rmses_logged = 0
         self._cumul_rmse = 0
         self._local_rmse = 0
 
@@ -82,8 +82,8 @@ class OnlineBase(ABC):
         Encapsulates the online training algorithm. Delegates prediction to subclasses via the 'protected'
         `_make_prediction` abstract method.
         :param obs: an observation from a time series obtained from an iteration procedure (e.g. using a for-loop)
-        :return: if at the end of a training window within the dataset, the proportion of the way through the training
-            sample and the current rmse; otherwise a None, None tuple
+        :return: if at the end of a window, the proportion of the way through the training data and the current rmse
+            values; otherwise a None, None, None tuple
         """
         if self._verbose:
             print(f'\rTimestep: {self._timestep + 1}/{self._timesteps}', end='')
@@ -98,13 +98,13 @@ class OnlineBase(ABC):
             self._buffer = self._buffer[(self._delay + 1):]
 
         self._timestep += 1
-        if self._timestep >= int((self._window + 1) * (self._timesteps / self._windows)):
+        if self._timestep >= int((self._rmses_logged + 1) * (self._timesteps / self._rmse_precision)):
             ret = (
-                f'{self._window / self._windows}_{(self._window + 1) / self._windows}',
+                f'{self._rmses_logged / self._rmse_precision}_{(self._rmses_logged + 1) / self._rmse_precision}',
                 self._local_rmse,
                 self._cumul_rmse
             )
-            self._window += 1
+            self._rmses_logged += 1
             return ret
 
         return None, None, None
@@ -121,22 +121,17 @@ class OnlineBase(ABC):
             how='inner'
         )
 
-        inst_synced_df = synced_df.query(
-            f'{int((self._window / self._windows) * self._timesteps)}'
-            f'<= {self._timestep_label}'
-            f'< {int(((self._window + 1) / self._windows) * self._timesteps)}'
-        )
+        local_synced_df = synced_df.tail(int(self._timesteps / self._rmse_precision))
 
-        if not (synced_df.empty and inst_synced_df.empty):
+        if not (synced_df.empty and local_synced_df.empty):
             self._cumul_rmse = sqrt(
                 mean_squared_error(synced_df[self._obs_label].values, synced_df[self._pred_label].values))
 
             self._local_rmse = sqrt(
-                mean_squared_error(inst_synced_df[self._obs_label].values, inst_synced_df[self._pred_label].values))
+                mean_squared_error(local_synced_df[self._obs_label].values, local_synced_df[self._pred_label].values))
 
             self._loss_df.loc[len(self._loss_df)] = [
                 self._timestep,
-                f'{self._window / self._windows}_{(self._window + 1) / self._windows}',
                 self._cumul_rmse,
                 self._local_rmse
             ]

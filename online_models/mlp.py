@@ -16,8 +16,8 @@ class OnlineMLP(OnlineBase):
                  epochs: int,
                  forecast_length: int,
                  delay: int,
-                 windows: int,
                  timesteps: int,
+                 local_rmse_precision: int = 100,
                  activation: str = 'relu',
                  optimizer: str = 'adam',
                  verbose: bool = False):
@@ -29,15 +29,17 @@ class OnlineMLP(OnlineBase):
         :param epochs: number of epochs to train MLP for at each timestep
         :param forecast_length: number of timesteps into the future for MLP to predict at
         :param delay: number of timesteps between predictions
-        :param windows: number of intervals to divide dataset into while training to compute Local RMSE
         :param timesteps: total number of timesteps to train MLP for
+        :param local_rmse_precision: parameter used to calculate the number of previous timesteps used in calculating
+            Local RMSE
         :param activation: the activation function each neuron should use
         :param optimizer: the optimizer used to compile the model
         :param verbose: if true, will log current training timestep
         """
 
         # Initialize base class
-        super(OnlineMLP, self).__init__(history_length, forecast_length, delay, windows, timesteps, verbose=verbose)
+        super(OnlineMLP, self).__init__(history_length, forecast_length, delay, timesteps,
+                                        local_rmse_precision=local_rmse_precision, verbose=verbose)
 
         # Save training parameters
         self._epochs = epochs
