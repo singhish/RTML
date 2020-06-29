@@ -49,8 +49,6 @@ making a prediction. Default: `0`
 Default: `1`
 * `--std`: selects the time series from the `data/` folder with `std` standard deviations. Valid values are `1`, `5`,
 and `10`. Default: `1`
-* `--dataset-size`: number of seconds of time series data to train on. For the datasets in `data/`, this should be a
-positive float less than `10.110723`. Default: `5.0`
 * `--windows`: number of equal segments over which the model's `Local RMSE` is computed. Default: `50`
 * `--save`: if specified, saves the model's predictions to a `csv` file.
 
@@ -60,7 +58,7 @@ By default, `online.py` produces lines of output in the following `csv` format
 ```csv
 {s},{std},{sample rate},{history length},{units},{epochs},{forecast length},{window},{local rmse},{cumulative rmse}
 ```
-until the model has fully traversed the specified `dataset_size` of time series data.
+until the model has fully traversed the training data.
 
 #### Interpretation
 * `window` values are formatted as

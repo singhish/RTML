@@ -22,10 +22,9 @@ parser.add_argument('-f', '--forecast-length', type=int, default=1)
 parser.add_argument('-r', '--resample-factor', type=float, default=.2)
 parser.add_argument('-d', '--delay', type=int, default=0)
 
-# Select dataset configuration
+# Select data configuration
 parser.add_argument('--s', type=int, default=1)
 parser.add_argument('--std', type=int, default=1)
-parser.add_argument('--dataset-size', type=float, default=5.0)
 parser.add_argument('--windows', type=int, default=50)
 
 # Other options
@@ -36,7 +35,7 @@ args = parser.parse_args()
 ## Load and resample dataset
 dataset = open(os.path.join(FILE, f'../data/{args.s}S_{args.std}STD.csv'), 'r')
 series, sample_rate = resample_time_series(
-    pd.read_csv(dataset).query(f'Time <= {args.dataset_size}')[['Time', 'Observation']],
+    pd.read_csv(dataset)[['Time', 'Observation']],
     args.resample_factor
 )
 
@@ -69,18 +68,18 @@ else:
 print(f'> Benchmarking online {str.upper(args.model)} with input_size={args.history_length}, '
       f'{f"units={args.units}, " if args.model == "mlp" else ""}'
       f'epochs={args.epochs}, and forecast_length={args.forecast_length}\n'
-      f'> at {args.windows} loss calculation windows and {args.dataset_size}s of training data\n'
-      f'> from {args.s}S_{args.std}STD.csv resampled to {int(sample_rate)} Hz.',
+      f'> at {args.windows} loss calculation windows\n'
+      f'> using the dataset {args.s}S_{args.std}STD.csv resampled to {sample_rate} Hz.',
       file=sys.stderr)
 
 for _, _, obs in series.itertuples():
     window, local_rmse, cumul_rmse = model.advance_iteration(obs)
     if local_rmse:
         if isinstance(model, OnlineMLP):
-            print(f'{args.s},{args.std},{int(sample_rate)},{args.history_length},{args.units},{args.epochs},'
+            print(f'{args.s},{args.std},{sample_rate},{args.history_length},{args.units},{args.epochs},'
                   f'{args.forecast_length},{window},{local_rmse},{cumul_rmse}')
         elif isinstance(model, OnlineLSTM):
-            print(f'{args.s},{args.std},{int(sample_rate)},{args.history_length},{args.epochs},{args.forecast_length},'
+            print(f'{args.s},{args.std},{sample_rate},{args.history_length},{args.epochs},{args.forecast_length},'
                   f'{window},{local_rmse},{cumul_rmse}')
 
 if args.save:
