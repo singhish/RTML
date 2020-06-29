@@ -12,7 +12,7 @@ FILE = os.path.dirname(__file__)
 parser = argparse.ArgumentParser(description='Online Model Benchmark')
 
 # Select model (mlp or lstm)
-parser.add_argument('-m', '--model', type=str, default='lstm')
+parser.add_argument('-m', '--model', type=str, default='mlp')
 
 # Select training configuration
 parser.add_argument('-l', '--history-length', type=int, default=10)
