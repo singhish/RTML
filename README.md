@@ -51,24 +51,28 @@ Default: `1`
 and `10`. Default: `1`
 * `--dataset-size`: number of seconds of time series data to train on. For the datasets in `data/`, this should be a
 positive float less than `10.110723`. Default: `5.0`
-* `--intervals`: number of equal segments over which the model's `Local RMSE` is computed. Default: `50`
+* `--windows`: number of equal segments over which the model's `Local RMSE` is computed. Default: `50`
 * `--save`: if specified, saves the model's predictions to a `csv` file.
 
 ### Output
 
 By default, `online.py` produces lines of output in the following `csv` format
 ```csv
-{s},{std},{sample rate},{history length},{units},{epochs},{forecast length},{interval},{local rmse},{cumulative rmse}
+{s},{std},{sample rate},{history length},{units},{epochs},{forecast length},{window},{local rmse},{cumulative rmse}
 ```
 until the model has fully traversed the specified `dataset_size` of time series data.
 
 #### Interpretation
-* `interval` values are formatted as
+* `window` values are formatted as
 ```
-{start of interval}_{end of interval}
+{start of window}_{end of window}
 ```
-where `start of interval` and `end of interval` denote fractions of the way through the amount training data specified.
+where `start of window` and `end of window` denote fractions of the way through the amount training data specified.
 * The `units` column is omitted if the LSTM model is used.
+
+### Jupyter Notebook
+For a demo on how to use the classes in `online_models/` in your own project, refer to the [notebook](
+/notebooks/Online_Training_Demo.ipynb) in this repository.
 
 ## Acknowledgements
 

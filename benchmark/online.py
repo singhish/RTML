@@ -26,7 +26,7 @@ parser.add_argument('-d', '--delay', type=int, default=0)
 parser.add_argument('--s', type=int, default=1)
 parser.add_argument('--std', type=int, default=1)
 parser.add_argument('--dataset-size', type=float, default=5.0)
-parser.add_argument('--intervals', type=int, default=50)
+parser.add_argument('--windows', type=int, default=50)
 
 # Other options
 parser.add_argument('--save', action='store_true')
@@ -49,7 +49,7 @@ if args.model == 'mlp':
         args.epochs,
         args.forecast_length,
         args.delay,
-        args.intervals,
+        args.windows,
         series.shape[0]
     )
 elif args.model == 'lstm':
@@ -58,30 +58,30 @@ elif args.model == 'lstm':
         args.epochs,
         args.forecast_length,
         args.delay,
-        args.intervals,
+        args.windows,
         series.shape[0]
     )
 else:
     raise ValueError(f'Model not found: {args.model}. Must be `mlp` or `lstm`.')
 
 ## Execute training
-## Log the RMSE at end of each of the number of intervals specified for the specified training configuration
+## Log the RMSE at end of each of the number of windows specified for the specified training configuration
 print(f'> Benchmarking online {str.upper(args.model)} with input_size={args.history_length}, '
       f'{f"units={args.units}, " if args.model == "mlp" else ""}'
       f'epochs={args.epochs}, and forecast_length={args.forecast_length}\n'
-      f'> at {args.intervals} loss calculation intervals and {args.dataset_size}s of training data\n'
+      f'> at {args.windows} loss calculation windows and {args.dataset_size}s of training data\n'
       f'> from {args.s}S_{args.std}STD.csv resampled to {int(sample_rate)} Hz.',
       file=sys.stderr)
 
-for _, _, accel in series.itertuples():
-    interval, local_rmse, rmse = model.advance_iteration(accel)
-    if rmse:
+for _, _, obs in series.itertuples():
+    window, local_rmse, cumul_rmse = model.advance_iteration(obs)
+    if local_rmse:
         if isinstance(model, OnlineMLP):
             print(f'{args.s},{args.std},{int(sample_rate)},{args.history_length},{args.units},{args.epochs},'
-                  f'{args.forecast_length},{interval},{local_rmse},{rmse}')
+                  f'{args.forecast_length},{window},{local_rmse},{cumul_rmse}')
         elif isinstance(model, OnlineLSTM):
             print(f'{args.s},{args.std},{int(sample_rate)},{args.history_length},{args.epochs},{args.forecast_length},'
-                  f'{interval},{local_rmse},{rmse}')
+                  f'{window},{local_rmse},{cumul_rmse}')
 
 if args.save:
     model.to_df().to_csv(f'online-{args.model}-predictions.csv')

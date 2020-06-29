@@ -14,23 +14,25 @@ class OnlineLSTM(OnlineBase):
                  epochs: int,
                  forecast_length: int,
                  delay: int,
-                 intervals: int,
+                 windows: int,
                  timesteps: int,
-                 optimizer: str = 'adam'):
+                 optimizer: str = 'adam',
+                 verbose: bool = False):
         """
         Constructor.
 
-        :param history_length: cell size of LSTM
-        :param epochs: number of epochs to train LSTM for
+        :param history_length: number of units in LSTM
+        :param epochs: number of epochs to train LSTM for at each timestep
         :param forecast_length: number of timesteps into the future for LSTM to predict at
-        :param delay: number of successive timesteps at which a prediction is made
-        :param intervals: number of training intervals to divide dataset into while training
+        :param delay: number of timesteps between predictions
+        :param windows: number of intervals to divide dataset into while training to compute Local RMSE
         :param timesteps: total number of timesteps to train LSTM for
         :param optimizer: the optimizer used to compile the model
+        :param verbose: if true, will log current training timestep
         """
 
         # Initialize base class
-        super(OnlineLSTM, self).__init__(history_length, forecast_length, delay, intervals, timesteps)
+        super(OnlineLSTM, self).__init__(history_length, forecast_length, delay, windows, timesteps, verbose=verbose)
 
         # Initialize epochs
         self._epochs = epochs
