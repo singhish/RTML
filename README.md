@@ -69,7 +69,7 @@ where `start of window` and `end of window` denote fractions of the way through 
 * The `units` column is omitted if the LSTM model is used.
 
 ### Jupyter Notebook
-For a demo on how to use the classes in `online_models/` in your own project, refer to the [notebook](
+For a demo on how to use the classes in the `online_models` package in your own project, refer to the [notebook](
 /notebooks/Online_Training_Demo.ipynb) in this repository.
 
 ## Acknowledgements
