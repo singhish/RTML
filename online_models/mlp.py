@@ -31,7 +31,7 @@ class OnlineMLP(OnlineBase):
         :param timesteps: total number of timesteps to train MLP for
         :param activation: the activation function each neuron should use
         :param optimizer: the optimizer used to compile the model
-        :param verbose: if true, will log current timestep during training
+        :param verbose: if True, logs current training timestep during training
         """
 
         # Initialize base class

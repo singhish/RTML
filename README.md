@@ -49,13 +49,13 @@ Default: `1`
 * `--std`: selects the time series from the `data/` folder with `std` standard deviations. Valid values are `1`, `5`,
 and `10`. Default: `1`
 * `-r`/`--resample-factor`: fraction of the original sample rate of the training dataset to resample to. Default: `.2`
-* `--save`: if specified, saves the model's predictions to a `csv` file.
+* `--save`: if specified, saves the model's predictions and RMSE values to a `csv` file.
 
 ### Output
 
 By default, `online.py` produces lines of output in the following `csv` format
 ```csv
-{s},{std},{sample rate},{history length},{units},{epochs},{forecast length},{local rmse},{cumulative rmse}
+{s},{std},{sample rate},{history length},{units},{epochs},{forecast length},{current timestep},{current observation},{prediction timestep},{prediction},{cumulative rmse},{d/dt(cumulative rmse)}
 ```
 until the model has fully traversed the training data. The `units` column is omitted if the LSTM model is used.
 

@@ -24,7 +24,7 @@ class OnlineBase(ABC):
         :param forecast_length: number of timesteps into the future for model to predict at
         :param delay: number of timesteps between predictions
         :param timesteps: total number of timesteps to train model for
-        :param verbose: if true, will log current timestep during training
+        :param verbose: if True, logs current training timestep during training
         """
 
         # Delay must be less than or equal to forecast length
@@ -45,6 +45,10 @@ class OnlineBase(ABC):
         self._cumul_rmse_label = 'Cumulative RMSE'
         self._d_cumul_rmse_label = 'd/dt(Cumulative RMSE)'
 
+        self._metrics = pd.DataFrame(
+            columns=[self._timestep_label, self._obs_label, self._pred_label,
+                     self._cumul_rmse_label, self._d_cumul_rmse_label])
+
         self._obs_df = pd.DataFrame(columns=[self._timestep_label, self._obs_label])
         self._pred_df = pd.DataFrame(columns=[self._timestep_label, self._pred_label])
         self._loss_df = pd.DataFrame(
@@ -53,14 +57,15 @@ class OnlineBase(ABC):
         # Initialize state
         self._buffer = []
         self._timestep = 0
-        self._cumul_rmse = None
+        self._cumul_rmse = np.nan
+        self._d_cumul_rmse = np.nan
 
     def to_df(self) -> pd.DataFrame:
         """
         Exports the DataFrames keeping track of observations, predictions, and loss values to a Pandas DataFrame.
         :return: a Pandas DataFrame containing observed, predicted, and loss values at each timestep
         """
-        return pd.merge_ordered(
+        merged = pd.merge_ordered(
             self._obs_df,
             pd.merge_ordered(
                 self._pred_df,
@@ -72,13 +77,17 @@ class OnlineBase(ABC):
             how='outer'
         )
 
-    def advance_iteration(self, obs: float) -> (float, float):
+        merged[self._timestep_label] = merged[self._timestep_label].astype(int)
+
+        return merged
+
+    def advance_iteration(self, obs: float) -> (int, float, float, float):
         """
         Encapsulates the online training algorithm. Delegates prediction to subclasses via the 'protected'
         `_make_prediction` abstract method.
         :param obs: an observation from a time series obtained from an iteration procedure (e.g. using a for-loop)
-        :return: the current Cumulative RMSE and d/dt(Cumulative RMSE), or (nan, nan) if the model's buffer isn't full
-            enough to make a prediction
+        :return: the timestep predicting at, the model's prediction, the current cumulative RMSE, and the current
+            time derivative of the cumulative RMSE
         """
         if self._verbose:
             print(f'\rTimestep: {self._timestep}/{self._timesteps - 1}', end='')
@@ -88,16 +97,21 @@ class OnlineBase(ABC):
 
         if len(self._buffer) == self._history_length + self._forecast_length:
             pred = self._make_prediction()
-            self._pred_df.loc[len(self._pred_df)] = [int(self._timestep + self._forecast_length), pred]
+            self._pred_df.loc[len(self._pred_df)] = [self._timestep + self._forecast_length, pred]
             self._buffer = self._buffer[(self._delay + 1):]
+
+        self._update_loss()
+
+        ret = (
+            self._timestep + self._forecast_length,
+            np.nan if self._pred_df.empty else self._pred_df[self._pred_label].values[-1],
+            self._cumul_rmse,
+            self._d_cumul_rmse
+        )
 
         self._timestep += 1
 
-        self._update_loss()
-        if self._loss_df.empty:
-            return np.nan, np.nan
-        _, cumul_rmse, d_cumul_rmse = self._loss_df.to_records(index=False)[-1]
-        return cumul_rmse, d_cumul_rmse
+        return ret
 
     def _update_loss(self):
         """
@@ -116,12 +130,11 @@ class OnlineBase(ABC):
 
             if not self._loss_df.empty:
                 if not self._timestep % (self._delay + 1):
-                    d_cumul_rmse = np.gradient(
+                    self._d_cumul_rmse = np.gradient(
                         np.append(self._loss_df[self._cumul_rmse_label].values, self._cumul_rmse), 1)[-1]
-                    self._loss_df.loc[len(self._loss_df)] = [self._timestep, self._cumul_rmse, d_cumul_rmse]
+                    self._loss_df.loc[len(self._loss_df)] = [self._timestep, self._cumul_rmse, self._d_cumul_rmse]
             else:
                 self._loss_df.loc[len(self._loss_df)] = [self._timestep, np.nan, np.nan]
-
 
     @abstractmethod
     def _make_prediction(self) -> float:

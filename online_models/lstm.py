@@ -16,7 +16,7 @@ class OnlineLSTM(OnlineBase):
                  delay: int,
                  timesteps: int,
                  optimizer: str = 'adam',
-                 verbose: bool = False):
+                 verbose: bool = True):
         """
         Constructor.
 
@@ -26,7 +26,7 @@ class OnlineLSTM(OnlineBase):
         :param delay: number of timesteps between predictions
         :param timesteps: total number of timesteps to train LSTM for
         :param optimizer: the optimizer used to compile the model
-        :param verbose: if true, will log current timestep during training
+        :param verbose: if True, logs current training timestep during training
         """
 
         # Initialize base class

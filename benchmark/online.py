@@ -18,7 +18,7 @@ parser.add_argument('-m', '--model', type=str, default='mlp')
 parser.add_argument('-l', '--history-length', type=int, default=10)
 parser.add_argument('-u', '--units', type=int, default=[10], nargs='*')
 parser.add_argument('-e', '--epochs', type=int, default=1)
-parser.add_argument('-f', '--forecast-length', type=int, default=1)
+parser.add_argument('-f', '--forecast-length', type=int, default=5)
 parser.add_argument('-d', '--delay', type=int, default=0)
 
 # Select data configuration
@@ -68,14 +68,14 @@ print(f'> Benchmarking online {str.upper(args.model)} with history_length={args.
       f'> using the dataset {args.s}S_{args.std}STD.csv resampled to {sample_rate} Hz.',
       file=sys.stderr)
 
-for timestep, _, obs in resampled.itertuples():
-    cumul_rmse, d_cumul_rmse = model.advance_iteration(obs)
+for obs_timestep, _, obs in resampled.itertuples():
+    pred_timestep, pred, cumul_rmse, d_cumul_rmse = model.advance_iteration(obs)
     if isinstance(model, OnlineMLP):
-        print(f'{args.s},{args.std},{timestep},{sample_rate},{args.history_length},{args.units},{args.epochs},'
-              f'{args.forecast_length},{cumul_rmse},{d_cumul_rmse}')
+        print(f'{args.s},{args.std},{sample_rate},{args.history_length},{args.units},{args.epochs},'
+              f'{args.forecast_length},{obs_timestep},{obs},{pred_timestep},{pred},{cumul_rmse},{d_cumul_rmse}')
     elif isinstance(model, OnlineLSTM):
-        print(f'{args.s},{args.std},{timestep},{sample_rate},{args.history_length},{args.epochs},'
-              f'{args.forecast_length},{cumul_rmse},{d_cumul_rmse}')
+        print(f'{args.s},{args.std},{sample_rate},{args.history_length},{args.epochs},{args.forecast_length},'
+              f'{obs_timestep},{obs},{pred_timestep},{pred},{cumul_rmse},{d_cumul_rmse}')
 
 if args.save:
     model.to_df().to_csv(f'online-{args.model}-predictions.csv')
