@@ -25,7 +25,6 @@ parser.add_argument('-d', '--delay', type=int, default=0)
 parser.add_argument('--s', type=int, default=1)
 parser.add_argument('--std', type=int, default=1)
 parser.add_argument('-r', '--resample-factor', type=float, default=.2)
-parser.add_argument('--rmses-to-log', type=int, default=50)
 
 # Other options
 parser.add_argument('--save', action='store_true')
@@ -48,8 +47,7 @@ if args.model == 'mlp':
         args.epochs,
         args.forecast_length,
         args.delay,
-        resampled.shape[0],
-        local_rmse_precision=args.rmses_to_log
+        resampled.shape[0]
     )
 elif args.model == 'lstm':
     model = OnlineLSTM(
@@ -57,8 +55,7 @@ elif args.model == 'lstm':
         args.epochs,
         args.forecast_length,
         args.delay,
-        resampled.shape[0],
-        local_rmse_precision=args.rmses_to_log
+        resampled.shape[0]
     )
 else:
     raise ValueError(f'Model not found: {args.model}. Must be `mlp` or `lstm`.')
@@ -71,15 +68,14 @@ print(f'> Benchmarking online {str.upper(args.model)} with history_length={args.
       f'> using the dataset {args.s}S_{args.std}STD.csv resampled to {sample_rate} Hz.',
       file=sys.stderr)
 
-for _, _, obs in resampled.itertuples():
-    window, local_rmse, cumul_rmse = model.advance_iteration(obs)
-    if local_rmse:
-        if isinstance(model, OnlineMLP):
-            print(f'{args.s},{args.std},{sample_rate},{args.history_length},{args.units},{args.epochs},'
-                  f'{args.forecast_length},{window},{local_rmse},{cumul_rmse}')
-        elif isinstance(model, OnlineLSTM):
-            print(f'{args.s},{args.std},{sample_rate},{args.history_length},{args.epochs},{args.forecast_length},'
-                  f'{window},{local_rmse},{cumul_rmse}')
+for timestep, _, obs in resampled.itertuples():
+    cumul_rmse, d_cumul_rmse = model.advance_iteration(obs)
+    if isinstance(model, OnlineMLP):
+        print(f'{args.s},{args.std},{timestep},{sample_rate},{args.history_length},{args.units},{args.epochs},'
+              f'{args.forecast_length},{cumul_rmse},{d_cumul_rmse}')
+    elif isinstance(model, OnlineLSTM):
+        print(f'{args.s},{args.std},{timestep},{sample_rate},{args.history_length},{args.epochs},'
+              f'{args.forecast_length},{cumul_rmse},{d_cumul_rmse}')
 
 if args.save:
     model.to_df().to_csv(f'online-{args.model}-predictions.csv')

@@ -49,24 +49,15 @@ Default: `1`
 * `--std`: selects the time series from the `data/` folder with `std` standard deviations. Valid values are `1`, `5`,
 and `10`. Default: `1`
 * `-r`/`--resample-factor`: fraction of the original sample rate of the training dataset to resample to. Default: `.2`
-* `--rmses-to-log`: number of times RMSE measurements are logged. Default: `50`
 * `--save`: if specified, saves the model's predictions to a `csv` file.
 
 ### Output
 
 By default, `online.py` produces lines of output in the following `csv` format
 ```csv
-{s},{std},{sample rate},{history length},{units},{epochs},{forecast length},{window},{local rmse},{cumulative rmse}
+{s},{std},{sample rate},{history length},{units},{epochs},{forecast length},{local rmse},{cumulative rmse}
 ```
-until the model has fully traversed the training data.
-
-#### Interpretation
-* `window` values are formatted as
-```
-{start of window}_{end of window}
-```
-where `start of window` and `end of window` denote fractions of the way through the training data.
-* The `units` column is omitted if the LSTM model is used.
+until the model has fully traversed the training data. The `units` column is omitted if the LSTM model is used.
 
 ### Jupyter Notebook
 For a demo on how to use the classes in the `online_models` package in your own project, refer to the [notebook](

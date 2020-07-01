@@ -15,7 +15,6 @@ class OnlineLSTM(OnlineBase):
                  forecast_length: int,
                  delay: int,
                  timesteps: int,
-                 local_rmse_precision: int = 100,
                  optimizer: str = 'adam',
                  verbose: bool = False):
         """
@@ -26,15 +25,12 @@ class OnlineLSTM(OnlineBase):
         :param forecast_length: number of timesteps into the future for LSTM to predict at
         :param delay: number of timesteps between predictions
         :param timesteps: total number of timesteps to train LSTM for
-        :param local_rmse_precision: parameter used to calculate the number of previous timesteps used in calculating
-            Local RMSE
         :param optimizer: the optimizer used to compile the model
-        :param verbose: if true, will log current training timestep
+        :param verbose: if true, will log current timestep during training
         """
 
         # Initialize base class
-        super(OnlineLSTM, self).__init__(history_length, forecast_length, delay, timesteps,
-                                         local_rmse_precision=local_rmse_precision, verbose=verbose)
+        super(OnlineLSTM, self).__init__(history_length, forecast_length, delay, timesteps, verbose=verbose)
 
         # Initialize epochs
         self._epochs = epochs
