@@ -5,9 +5,10 @@ Eventually intended to be deployed onto FPGA architectures for real-time state e
 
 ## Getting Started
 
-To install requirements in a `conda`-like environment, clone this repository and run
+First, to install dependencies in a `conda`-like environment, clone this repository and run
 ```shell script
-pip install -r requirements.txt
+conda create -n rtml -f environment.yml
+conda activate rtml
 ```
 
 To launch a training session, run
