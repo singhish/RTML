@@ -81,7 +81,7 @@ class OnlineBase(ABC):
 
         return merged
 
-    def advance_iteration(self, obs: float) -> (int, float, float, float):
+    def update(self, obs: float) -> (int, float, float, float):
         """
         Encapsulates the online training algorithm. Delegates prediction to subclasses via the 'protected'
         `_make_prediction` abstract method.
@@ -90,7 +90,7 @@ class OnlineBase(ABC):
             time derivative of the cumulative RMSE
         """
         if self._verbose:
-            print(f'\rTimestep: {self._timestep}/{self._timesteps - 1}', end='')
+            print(f'\rTimestep: {self._timestep + 1}/{self._timesteps}', end='')
 
         self._obs_df.loc[len(self._obs_df)] = [self._timestep, obs]
         self._buffer.append(obs)

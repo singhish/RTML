@@ -13,8 +13,8 @@ def resample_time_series(series: pd.DataFrame, resample_factor: float) -> (pd.Da
     """
     n_samples = int(resample_factor * series.shape[0])
 
-    time = series['Time'].values
-    obss = series['Observation'].values
+    time = series['X_Value'].values
+    obss = series['Acceleration'].values
 
     resampled_obss, resampled_time = resample(obss, n_samples, time)
 

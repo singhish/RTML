@@ -25,8 +25,7 @@ epochs per new observation = 1
 optimizer = adam
 loss = mse
 ```
-that predicts 1 timestep into the future on experimentally generated time series data consisting of 1 sinusoid, a
-standard deviation of 1, and a resample down to 330 Hz.
+that predicts 1 timestep into the future on an experimentally generated vibration dataset resampled down to 330 Hz.
 
 ## Usage
 
@@ -43,12 +42,8 @@ hidden layer is hardcoded to use `relu` as its activation function. As the LSTM 
 LSTM without any stacking, this argument should not be specified if `lstm` is selected for `model`. Default: `10`
 * `-e`/`--epochs`: number of epochs to train the model at each timestep. Default: `1`
 * `-f`/`--forecast-length`: number of timesteps into the future to predict at. Default: `1`
-* `d`/`--delay`: number of timesteps between predictions. A `delay` of `2` means the model lets 2 timesteps pass before
+* `-d`/`--delay`: number of timesteps between predictions. A `delay` of `2` means the model lets 2 timesteps pass before
 making a prediction. Default: `0`
-* `--s`: selects the time series from the `data/` folder composed of `s` sinusoids. Valid values are `1`, `2`, and `3`.
-Default: `1`
-* `--std`: selects the time series from the `data/` folder with `std` standard deviations. Valid values are `1`, `5`,
-and `10`. Default: `1`
 * `-r`/`--resample-factor`: fraction of the original sample rate of the training dataset to resample to. Default: `.2`
 * `--save`: if specified, saves the model's predictions and RMSE values to a `csv` file.
 
@@ -56,7 +51,7 @@ and `10`. Default: `1`
 
 By default, `online.py` produces lines of output in the following `csv` format
 ```csv
-{s},{std},{sample rate},{history length},{units},{epochs},{forecast length},{current timestep},{current observation},{prediction timestep},{prediction},{cumulative rmse},{d/dt(cumulative rmse)}
+{sample rate},{history length},{units},{epochs},{forecast length},{current timestep},{current observation},{prediction timestep},{prediction},{cumulative rmse},{d/dt(cumulative rmse)}
 ```
 until the model has fully traversed the training data. The `units` column is omitted if the LSTM model is used.
 
