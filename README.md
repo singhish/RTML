@@ -7,7 +7,7 @@ Eventually intended to be deployed onto FPGA architectures for real-time state e
 
 First, to install dependencies in a `conda`-like environment, clone this repository and run
 ```shell script
-conda create -n rtml -f environment.yml
+conda env create -n rtml -f environment.yml
 conda activate rtml
 ```
 
