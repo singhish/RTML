@@ -14,7 +14,7 @@ conda activate rtml
 To launch a training session, run
 
 ```shell script
-python benchmark/online.py
+python benchmark.py
 ```
 
 By default, this will train a multilayer perceptron neural network online with the following configuration
@@ -25,39 +25,29 @@ epochs per new observation = 1
 optimizer = adam
 loss = mse
 ```
-that predicts 1 timestep into the future on an experimentally generated vibration dataset resampled down to 330 Hz.
+that predicts 5 timesteps into the future on experimentally generated vibration data.
 
 ## Usage
 
 ### Command Line Interface
 
-The command line arguments for `online.py` are as follows:
-* `-m`/`--model`: the online model to use. Can be `mlp` or `lstm`. Default: `mlp`
-* `-l`/`--history-length`: the number of past observations to be fed into the model as training data. Depending on the
-model, this will correspond to either the `input_dim` of the MLP, or the `input_shape` of the LSTM (passed in as
-`(history_length, 1)`). Default: `10`
-* `-u`/`--units`: a series of integers specifying the number of neurons in each `Dense` hidden layer of the MLP.
+The command line arguments for `benchmark.py` are as follows:
+* `--history-length`: the number of past observations to be fed into the model as training data. This will correspond the
+`input_dim` of the MLP. Default: `10`
+* `--forecast-length`: number of timesteps into the future to predict at. Default: `5`
+* `--hidden-layers`: a series of integers specifying the number of neurons in each `Dense` hidden layer of the MLP.
 Specifying `-u 30 20 10` would sequentially create three `Dense` hidden layers of sizes 30, 20, and 10. For now, each
-hidden layer is hardcoded to use `relu` as its activation function. As the LSTM implemented in this project is a simple
-LSTM without any stacking, this argument should not be specified if `lstm` is selected for `model`. Default: `10`
-* `-e`/`--epochs`: number of epochs to train the model at each timestep. Default: `1`
-* `-f`/`--forecast-length`: number of timesteps into the future to predict at. Default: `1`
-* `-d`/`--delay`: number of timesteps between predictions. A `delay` of `2` means the model lets 2 timesteps pass before
-making a prediction. Default: `0`
-* `-r`/`--resample-factor`: fraction of the original sample rate of the training dataset to resample to. Default: `.2`
-* `--save`: if specified, saves the model's predictions and RMSE values to a `csv` file.
+hidden layer is hardcoded to use `relu` as its activation function. Default: `10`
+* `--epochs-per-sample`: number of epochs to train the model at each timestep. Default: `1`
 
 ### Output
 
-By default, `online.py` produces lines of output in the following `csv` format
+By default, `benchmark.py` produces lines of output in the following `csv` format
 ```csv
-{sample rate},{history length},{units},{epochs},{forecast length},{current timestep},{current observation},{prediction timestep},{prediction},{cumulative rmse},{d/dt(cumulative rmse)}
+{history length},{forecast length},{hidden layers},{epochs per sample},{sample rate of dataset},{current time},{current sample},{time being predicted at},{prediction}
 ```
-until the model has fully traversed the training data. The `units` column is omitted if the LSTM model is used.
-
-### Jupyter Notebook
-For a demo on how to use the classes in the `online_models` package in your own project, refer to the [notebook](
-/notebooks/Online_Training_Demo.ipynb) in this repository.
+until the model has fully traversed the training data. The `utils.metrics` module provides a Pandas adapter class called
+`MetricsAdapter` that allows analyses of the data outputted by this script.
 
 ## Acknowledgements
 
