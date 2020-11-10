@@ -44,7 +44,7 @@ The command line arguments for `benchmark.py` are as follows:
 `input_dim` of the MLP. Default: `10`
 * `--forecast-length`: number of timesteps into the future to predict at. Default: `5`
 * `--hidden-layers`: a series of integers specifying the number of neurons in each `Dense` hidden layer of the MLP.
-Specifying `-u 30 20 10` would sequentially create three `Dense` hidden layers of sizes 30, 20, and 10. For now, each
+Specifying `--hidden-layers 30 20 10` would sequentially create three `Dense` hidden layers of sizes 30, 20, and 10. For now, each
 hidden layer is hardcoded to use `relu` as its activation function. Default: `10`
 * `--epochs-per-sample`: number of epochs to train the model at each timestep. Default: `1`
 * `--save`: if specified, saves results of training session to a `.csv` file.
