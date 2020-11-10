@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 
+# base class to be used for all online models
 class OnlineModelBase(ABC):
     def __init__(self,
                  history_length,

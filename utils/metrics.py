@@ -25,6 +25,8 @@ class MetricsAdapter:
     def rolling_rmse(self, window_size, label):
         return self._rolling_error(window_size, label, strategy=lambda x, y: np.sqrt(mean_squared_error(x, y)))
 
+    # time response assurance criterion
+    # metric source: https://link.springer.com/chapter/10.1007/978-1-4419-9834-7_79
     def trac(self):
         numerator = np.dot(self._observed, self._predicted) ** 2
         denominator = np.dot(self._observed, self._observed) * np.dot(self._predicted, self._predicted)

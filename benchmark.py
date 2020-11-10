@@ -13,12 +13,13 @@ parser.add_argument('--epochs-per-sample', type=int, default=1)
 parser.add_argument('--save', action='store_true')
 args = parser.parse_args()
 
-#dataset_names = [f for f in os.listdir('data') if not f.endswith('.pkl')]
+# load all files from datasets folder (for now only one file in this folder)
+#dataset_names = [f for f in os.listdir('datasets') if not f.endswith('.pkl')]
 dataset_names = ['Ivol_Acc_Load_data3_w3_w2_50per_STD_downBy256.lvm']
 for d in dataset_names:
-    dataset = read_lvm(os.path.abspath(f'data/{d}'))
+    dataset = read_lvm(os.path.abspath(f'datasets/{d}'))
     sample_rate = round(dataset.shape[0] / dataset.iloc[-1]['Time'], 2)
-    results = pd.DataFrame(columns=[
+    results = pd.DataFrame(columns=[  # maintains model's predictions for export if --save is specified
         'Timestep',
         'Time',
         'Observed',
@@ -27,27 +28,34 @@ for d in dataset_names:
         'Predicted'
     ])
 
+    # initialize online MLP
     model = OnlineMLP(args.history_length, args.forecast_length, args.hidden_layers, args.epochs_per_sample)
-    for i, time, sample in dataset.query('Time <= 19.7').itertuples():
+
+    # iterate through each sample in dataset
+    for i, time, sample in dataset.itertuples():
         pred_time = time + (args.forecast_length / sample_rate)
-        pred = model.update(sample)
-        #print(
-        #    f'{", ".join(str(x) for x in vars(args).values() if x not in [True, False])}, ',  # model configuration
-        #    f'{round(sample_rate, 2)}, ',                                                     # sample rate of dataset
-        #    f'{i}, ',                                                                         # current timestep
-        #    f'{round(time, 6)}, ',                                                            # current time
-        #    f'{sample}, ',                                                                    # current sample
-        #    f'{i + args.forecast_length}, ',                                                  # timestep being predicted at
-        #    f'{round(pred_time, 6)}, ',                                                       # time being predicted at
-        #    pred                                                                              # model prediction
-        #)
+        pred = model.update(sample)  # update model with new sample
+
+        # logging
+        print(
+            f'{", ".join(str(x) for x in vars(args).values() if not type(x) == bool)}, ',  # model configuration
+            f'{i}, ',                                                                      # current timestep
+            f'{round(time, 6)}, ',                                                         # current time
+            f'{sample}, ',                                                                 # current sample
+            f'{i + args.forecast_length}, ',                                               # timestep being predicted at
+            f'{round(pred_time, 6)}, ',                                                    # time being predicted at
+            pred                                                                           # model prediction
+        )
 
         results.loc[results.size + 1] = [i, time, sample, i + args.forecast_length, pred_time, pred]
 
-    results = results[['Timestep', 'Time', 'Observed']].merge(
-        results[['Pred Timestep', 'Pred Time', 'Predicted']].rename(columns={'Pred Timestep': 'Timestep'}),
-        how='outer'
-    )
-    results['Time'] = results['Time'].fillna(results['Pred Time'])
-    results = results[['Time', 'Observed', 'Predicted']]
-    results.to_csv(f'results_{d}.csv')
+    if args.save:
+        # export results in a 3-column format consisting of a timepoint, the observed value of the time series at the
+        # timepoint, and the value predicted by the model at the timepoint
+        results = results[['Timestep', 'Time', 'Observed']].merge(
+            results[['Pred Timestep', 'Pred Time', 'Predicted']].rename(columns={'Pred Timestep': 'Timestep'}),
+            how='outer'
+        )
+        results['Time'] = results['Time'].fillna(results['Pred Time'])
+        results = results[['Time', 'Observed', 'Predicted']]
+        results.to_csv(f'results_{d}.csv')

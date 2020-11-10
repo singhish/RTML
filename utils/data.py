@@ -2,7 +2,7 @@ import lvm_read
 import pandas as pd
 
 
-def read_lvm(path):
+def read_lvm(path):  # handles processing of datasets in lvm format
     raw_data = lvm_read.read(path)
     dataset = pd.DataFrame(
         raw_data[0]['data'],
