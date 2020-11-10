@@ -31,16 +31,16 @@ for d in dataset_names:
     for i, time, sample in dataset.query('Time <= 19.7').itertuples():
         pred_time = time + (args.forecast_length / sample_rate)
         pred = model.update(sample)
-        print(
-            f'{", ".join(str(x) for x in vars(args).values() if x not in [True, False])}, ',  # model configuration
-            f'{round(sample_rate, 2)}, ',                                                     # sample rate of dataset
-            f'{i}, ',                                                                         # current timestep
-            f'{round(time, 6)}, ',                                                            # current time
-            f'{sample}, ',                                                                    # current sample
-            f'{i + args.forecast_length}, ',                                                  # timestep being predicted at
-            f'{round(pred_time, 6)}, ',                                                       # time being predicted at
-            pred                                                                              # model prediction
-        )
+        #print(
+        #    f'{", ".join(str(x) for x in vars(args).values() if x not in [True, False])}, ',  # model configuration
+        #    f'{round(sample_rate, 2)}, ',                                                     # sample rate of dataset
+        #    f'{i}, ',                                                                         # current timestep
+        #    f'{round(time, 6)}, ',                                                            # current time
+        #    f'{sample}, ',                                                                    # current sample
+        #    f'{i + args.forecast_length}, ',                                                  # timestep being predicted at
+        #    f'{round(pred_time, 6)}, ',                                                       # time being predicted at
+        #    pred                                                                              # model prediction
+        #)
 
         results.loc[results.size + 1] = [i, time, sample, i + args.forecast_length, pred_time, pred]
 
